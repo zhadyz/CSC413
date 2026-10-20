@@ -1,5 +1,7 @@
 package edu.sfsu.csc413.chess.model;
 
+import edu.sfsu.csc413.chess.factory.PieceFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,5 +84,23 @@ public class Board {
             }
         }
         return text.toString();
+    }
+
+    /** Apply a move already checked by Game. Storage does not decide legality. */
+    public void apply(Move move) {
+        place(move.from(), null);
+        Piece placed = move.moved();
+        if (move.isPromotion()) {
+            // Reuse the factory's type lookup. This makes model depend on factory,
+            // but avoids duplicating the construction switch here.
+            placed = PieceFactory.create(move.promotesTo(), move.moved().color());
+        }
+        place(move.to(), placed);
+    }
+
+    /** Restore the original mover and whatever stood on the destination. */
+    public void undo(Move move) {
+        place(move.from(), move.moved());
+        place(move.to(), move.captured());
     }
 }
